@@ -3,12 +3,18 @@ $(document).ajaxSend(function(e, xhr, options) {
   xhr.setRequestHeader("X-CSRF-Token", token);
 });
 
-$(document).ready(function(){
+// needs to moved away from global scope later
+var jqFadeOut, 
+    timeout;
+jqFadeOut = function(identifier) {
+  timeout = setTimeout(function() {
+    $(identifier).hide("fast", function() {
+      $(identifier).remove();
+    });
+  }, 3500);
+};
 
-    // Hide notifications after some time.
-    setInterval(function() {
-      $(".notification-flash").hide("drop");
-    }, 3500);
+$(document).ready(function(){
 
     // Stream rule form.
     $('#streamrule_rule_type').bind('change', function() {
