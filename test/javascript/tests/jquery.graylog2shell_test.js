@@ -95,22 +95,22 @@
     e.which = 38;
     $input.trigger(e);
 
-    strictEqual($input.val(), "0");
+    strictEqual($input.val(), "99");
 
     $input.trigger(e);
     $input.trigger(e);
     $input.trigger(e);
 
-    strictEqual($input.val(), "3");
+    strictEqual($input.val(), "96");
 
     for (i = 0; i < 100; i++) {
       $input.trigger(e);
     }
-    strictEqual($input.val(), "99");
+    strictEqual($input.val(), "0");
 
     $input.trigger(e);
     $input.trigger(e);
-    strictEqual($input.val(), "99");
+    strictEqual($input.val(), "0");
   });
 
   test("the shell history: arrow down goes backward in history: integrational test", 4, function() {
@@ -128,13 +128,13 @@
     e.which = 38;
     $input.trigger(e);
 
-    strictEqual($input.val(), "0");
+    strictEqual($input.val(), "99");
 
     $input.trigger(e);
     $input.trigger(e);
     $input.trigger(e);
 
-    strictEqual($input.val(), "3");
+    strictEqual($input.val(), "96");
 
     e.which = 40;
 
@@ -142,9 +142,9 @@
     $input.trigger(e);
     $input.trigger(e);
 
-    strictEqual($input.val(), "0");
+    strictEqual($input.val(), "99");
     $input.trigger(e);
-    strictEqual($input.val(), "0");
+    strictEqual($input.val(), "99");
   });
 
   test("_handleHistory() sets up to 100 elements", 1, function() {

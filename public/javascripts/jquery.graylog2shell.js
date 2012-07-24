@@ -75,17 +75,17 @@
             self._handleEnterPress();
             break;
           case 38: // "Up arrow" key
-            if (self.lastCode === 38 && self.historyIndex > 0) { //we want to go further in history
+            if (self.historyIndex > 0) { //we want to go further in history
               self.historyIndex--;
             }
-            lastCommand = self.history[self.historyIndex - 1];
+            lastCommand = self.history[self.historyIndex];
             $input.val(lastCommand);
             break;
           case 40: // "Down arrow" key
             if (self.historyIndex <= self.history.length) {
               self.historyIndex++;
             }
-            lastCommand = self.history[self.historyIndex - 1];
+            lastCommand = self.history[self.historyIndex];
             $input.val(lastCommand);
             break;
           default:
