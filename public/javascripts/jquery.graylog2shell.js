@@ -20,6 +20,9 @@
       self.options = options;
       self.$element = $(element);
 
+      self.history = [];
+      self.historyIndex = 0;
+
       self._setWidthOfInput();
       self._bindEventsFromKeyboard();
       self.focus();
@@ -59,21 +62,36 @@
       var self = this,
           $container = $("#shell-container"),
           $input = $container.find("input"),
-          code,
           lastCommand,
+          code,
           value;
 
       $input.bind("keyup", function(e) {
+
         code = e.which;
-        if (code === 13) { // "Enter" key
-          self._handleEnterPress();
-        } else if (code === 38) { // "Up arrow" key
-          lastCommand = self.lastCommand;
-          value = $input.val();
-          if (lastCommand && value !== lastCommand) {
+
+        switch (code) {
+          case 13: // "Enter" key
+            self._handleEnterPress();
+            break;
+          case 38: // "Up arrow" key
+            if (self.lastCode === 38 && self.historyIndex > 0) { //we want to go further in history
+              self.historyIndex--;
+            }
+            lastCommand = self.history[self.historyIndex - 1];
             $input.val(lastCommand);
-          }
+            break;
+          case 40: // "Down arrow" key
+            if (self.historyIndex <= self.history.length) {
+              self.historyIndex++;
+            }
+            lastCommand = self.history[self.historyIndex - 1];
+            $input.val(lastCommand);
+            break;
+          default:
         }
+
+        self.lastCode = code;
       });
     },
 
@@ -94,9 +112,33 @@
         return;
       }
 
+      self._handleHistory(value);
       self._processInput(value);
-      self.lastCommand = value;
+
       $input.val("");
+    },
+
+    /**
+     * Handles the history array
+     * @private
+     */
+    _handleHistory: function(input) {
+      var self = this,
+          historylength = self.history.length,
+          temp = [],
+          i;
+
+      if (historylength === 0) {
+        self.history[0] = input;
+        return;
+      }
+
+      for (i = 0; i < historylength; i++) {
+        temp[i] = self.history[i];
+      }
+
+      self.history.push(input);
+      self.historyIndex = self.history.length;
     },
 
     /**
