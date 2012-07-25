@@ -55,7 +55,7 @@
 
     /**
      * Bind events from keyboard
-     * Submit with enter and show last command after "arrow up"
+     * Submit with enter, show last command after "arrow up" and show theprevious one after arrow down
      * @private
      */
     _bindEventsFromKeyboard: function() {
@@ -75,7 +75,7 @@
             self._handleEnterPress();
             break;
           case 38: // "Up arrow" key
-            if (self.historyIndex > 0) { //we want to go further in history
+            if (self.historyIndex > 0) { // we want to go further in history
               self.historyIndex--;
             }
             lastCommand = self.history[self.historyIndex];
@@ -119,7 +119,7 @@
     },
 
     /**
-     * Handles the history array
+     * Handles the history array and index
      * @private
      */
     _handleHistory: function(input) {
@@ -131,10 +131,6 @@
       if (historylength === 0) {
         self.history[0] = input;
         return;
-      }
-
-      for (i = 0; i < historylength; i++) {
-        temp[i] = self.history[i];
       }
 
       self.history.push(input);
