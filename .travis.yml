@@ -6,5 +6,6 @@ rvm:
 
 script: "phantomjs test/javascript/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/test/javascript/jquery.graylog2shell.html"
 
-notifications:
-  irc: "irc.freenode.org#graylog2"
+branches:
+  except:
+    - legacy
