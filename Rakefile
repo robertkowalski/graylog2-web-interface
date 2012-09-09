@@ -11,5 +11,12 @@ rescue LoadError
   # do nothing
 end
 
+desc "Run Phantom JS Unit tests"
+task :phantomjs do
+  cmd = "phantomjs test/javascript/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/test/javascript/jquery.graylog2shell.html\""
+  system(cmd)
+end
+
+
 trap_load_error { require 'metric_fu' }
 trap_load_error { require 'ci/reporter/rake/test_unit' }
