@@ -258,7 +258,7 @@
     instance._renderCallback({code: "error", reason: "Internal error."});
 
     strictEqual($('#shell').find('.shell-error').length, 1);
-    strictEqual($('#shell').find('.shell-error').text(), instance._getTimestamp() + " - Error: Internal error.");
+    strictEqual($('#shell').find('.shell-error').text(), instance._getTimestamp() + "w - Error: Internal error.");
   });
 
   test("renderCallback() renders count results", 3, function() {
