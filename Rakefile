@@ -15,6 +15,7 @@ desc "Run Phantom JS Unit tests"
 task :phantomjs do
   cmd = "phantomjs test/javascript/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/test/javascript/jquery.graylog2shell.html\""
   system(cmd)
+  exit(1) unless $?.exitstatus == 0
 end
 
 desc "Run Travis CI"
@@ -22,7 +23,7 @@ task :travis do
   ["rake phantomjs"].each do |cmd|
     puts "Starting to run #{cmd}..."
     system("export DISPLAY=:99.0 && bundle exec #{cmd}")
-    raise "#{cmd} failed!" unless $?.exitstatus == 0
+    exit(1) unless $?.exitstatus == 0
   end
 end
 
