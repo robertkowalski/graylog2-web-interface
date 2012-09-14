@@ -17,6 +17,15 @@ task :phantomjs do
   system(cmd)
 end
 
+desc "Run Travis CI"
+task :travis do
+  ["rake phantomjs"].each do |cmd|
+    puts "Starting to run #{cmd}..."
+    system("export DISPLAY=:99.0 && bundle exec #{cmd}")
+    raise "#{cmd} failed!" unless $?.exitstatus == 0
+  end
+end
+
 
 trap_load_error { require 'metric_fu' }
 trap_load_error { require 'ci/reporter/rake/test_unit' }
