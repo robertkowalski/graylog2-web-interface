@@ -248,7 +248,7 @@
     instance._renderCallback();
 
     strictEqual($('#shell').find('.shell-error').length, 1);
-    strictEqual($('#shell').find('.shell-error').text(), "01:00:00 - Internal error - Undefined result."); // sinon qunit date is always 01:00
+    strictEqual($('#shell').find('.shell-error').text(), instance._getTimestamp() + " - Internal error - Undefined result.");
   });
 
   test("renderCallback() renders errors from the ajax-error callback", 2, function() {
@@ -258,7 +258,7 @@
     instance._renderCallback({code: "error", reason: "Internal error."});
 
     strictEqual($('#shell').find('.shell-error').length, 1);
-    strictEqual($('#shell').find('.shell-error').text(), "01:00:00 - Error: Internal error."); // sinon qunit date is always 01:00
+    strictEqual($('#shell').find('.shell-error').text(), instance._getTimestamp() + " - Error: Internal error.");
   });
 
   test("renderCallback() renders count results", 3, function() {
