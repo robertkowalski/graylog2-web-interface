@@ -1,76 +1,97 @@
-var system = require('system');
-
-/**
- * Wait until the test condition is true or a timeout occurs. Useful for waiting
- * on a server response or for a ui change (fadeIn, etc.) to occur.
+/*
+ * Qt+WebKit powered headless test runner using Phantomjs
  *
- * @param testFx javascript condition that evaluates to a boolean,
- * it can be passed in as a string (e.g.: "1 == 1" or "$('#bar').is(':visible')" or
- * as a callback function.
- * @param onReady what to do when testFx condition is fulfilled,
- * it can be passed in as a string (e.g.: "1 == 1" or "$('#bar').is(':visible')" or
- * as a callback function.
- * @param timeOutMillis the max amount of time to wait. If not specified, 3 sec is used.
+ * Phantomjs installation: http://code.google.com/p/phantomjs/wiki/BuildInstructions
+ *
+ * Run with:
+ *  phantomjs runner.js [url-of-your-qunit-testsuite]
+ *
+ * E.g.
+ *      phantomjs runner.js http://localhost/qunit/test
  */
-function waitFor(testFx, onReady, timeOutMillis) {
-    var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 3001, //< Default Max Timout is 3s
-        start = new Date().getTime(),
-        condition = false,
-        interval = setInterval(function() {
-            if ( (new Date().getTime() - start < maxtimeOutMillis) && !condition ) {
-                // If not time-out yet and condition not yet fulfilled
-                condition = (typeof(testFx) === "string" ? eval(testFx) : testFx()); //< defensive code
-            } else {
-                if(!condition) {
-                    // If condition still not fulfilled (timeout but condition is 'false')
-                    console.log("'waitFor()' timeout");
-                    phantom.exit(1);
-                } else {
-                    // Condition fulfilled (timeout and/or condition is 'true')
-                    console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
-                    typeof(onReady) === "string" ? eval(onReady) : onReady(); //< Do what it's supposed to do once the condition is fulfilled
-                    clearInterval(interval); //< Stop this interval
-                }
-            }
-        }, 100); //< repeat check every 250ms
-};
 
-
-if (system.args.length !== 2) {
-    console.log('Usage: run-qunit.js URL');
-    phantom.exit(1);
-}
+var url = phantom.args[0];
 
 var page = require('webpage').create();
 
 // Route "console.log()" calls from within the Page context to the main Phantom context (i.e. current "this")
 page.onConsoleMessage = function(msg) {
-    console.log(msg);
+	console.log(msg);
 };
 
-page.open(system.args[1], function(status){
-    if (status !== "success") {
-        console.log("Unable to access network");
-        phantom.exit(1);
-    } else {
-        waitFor(function(){
-            return page.evaluate(function(){
-                var el = document.getElementById('qunit-testresult');
-                if (el && el.innerText.match('completed')) {
-                    return true;
-                }
-                return false;
-            });
-        }, function(){
-            var failedNum = page.evaluate(function(){
-                var el = document.getElementById('qunit-testresult');
-                console.log(el.innerText);
-                try {
-                    return el.getElementsByClassName('failed')[0].innerHTML;
-                } catch (e) { }
-                return 10000;
-            });
-            phantom.exit((parseInt(failedNum, 10) > 0) ? 1 : 0);
-        });
-    }
+page.onInitialized = function() {
+	page.evaluate(addLogging);
+};
+page.open(url, function(status){
+	if (status !== "success") {
+		console.log("Unable to access network: " + status);
+		phantom.exit(1);
+	} else {
+		// page.evaluate(addLogging);
+		var interval = setInterval(function() {
+			if (finished()) {
+				clearInterval(interval);
+				onfinishedTests();
+			}
+		}, 500);
+	}
 });
+
+function finished() {
+	return page.evaluate(function(){
+		return !!window.qunitDone;
+	});
+}
+
+function onfinishedTests() {
+	var output = page.evaluate(function() {
+			return JSON.stringify(window.qunitDone);
+	});
+	phantom.exit(JSON.parse(output).failed > 0 ? 1 : 0);
+}
+
+function addLogging() {
+	window.document.addEventListener( "DOMContentLoaded", function() {
+		var current_test_assertions = [];
+
+		QUnit.testDone(function(result) {
+			var name = result.module + ': ' + result.name;
+			var i;
+
+			if (result.failed) {
+				console.log('Assertion Failed: ' + name);
+
+				for (i = 0; i < current_test_assertions.length; i++) {
+					console.log('    ' + current_test_assertions[i]);
+				}
+			}
+
+			current_test_assertions = [];
+		});
+
+		QUnit.log(function(details) {
+			var response;
+
+			if (details.result) {
+				return;
+			}
+
+			response = details.message || '';
+
+			if (typeof details.expected !== 'undefined') {
+				if (response) {
+					response += ', ';
+				}
+
+				response += 'expected: ' + details.expected + ', but was: ' + details.actual;
+			}
+
+			current_test_assertions.push('Failed assertion: ' + response);
+		});
+
+		QUnit.done(function(result){
+			console.log('Took ' + result.runtime +  'ms to run ' + result.total + ' tests. ' + result.passed + ' passed, ' + result.failed + ' failed.');
+			window.qunitDone = result;
+		});
+	}, false );
+}

@@ -6,6 +6,7 @@ rvm:
 
 script: "rake phantomjs"
 
+# whitelist
 branches:
-  except:
-    - master
+  only:
+    - phantom-ci
